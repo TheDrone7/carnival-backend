@@ -17,7 +17,7 @@ impl GameQuery {
             .all(db)
             .await
             .expect("Unable to fetch games");
-        if games.len() > 0 {
+        if !games.is_empty() {
             let game = games[0].clone().into();
             Ok(game)
         } else {
