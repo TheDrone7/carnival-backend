@@ -1,0 +1,20 @@
+[package]
+name = "backend"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace]
+members=[".", "migration", "entity"]
+
+[dependencies]
+migration = { path = "migration" }
+entity = { path = "entity" }
+dotenv = "0.15.0"
+dotenv_codegen = "0.15.0"
+actix-web = "4.0.1"
+async-graphql = "4.0.1"
+async-graphql-actix-web = "4.0.1"
+sea-orm = { version = "^0.8.0", features = ["sqlx-postgres", "runtime-actix-rustls", "macros"] }
+serde = "1.0.137"
