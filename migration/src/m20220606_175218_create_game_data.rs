@@ -24,13 +24,7 @@ impl MigrationTrait for Migration {
             .create_table(
                 Table::create()
                     .table(GameData::Table)
-                    .col(
-                        ColumnDef::new(GameData::GameId)
-                            .integer()
-                            .not_null()
-                            .primary_key()
-                            .auto_increment(),
-                    )
+                    .col(ColumnDef::new(GameData::GameId).integer().not_null())
                     .col(ColumnDef::new(GameData::Key).string().not_null())
                     .col(ColumnDef::new(GameData::Value).text())
                     .to_owned(),
