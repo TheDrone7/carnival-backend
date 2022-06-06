@@ -19,13 +19,7 @@ impl GameType {
         Self {
             id: 1,
             title: "Vulcanist".to_string(),
-            description: ("Vulcanist is a first person shooter with seventeen levels, tons of different enemies\
-            , three boss fights, and a story all but unexpected.  \
-            Do you have what it takes to save your friend...or your life?\n\n---\nBe sure to check out my newest \
-            project Replverse!\nhttps://replit.com/@IroncladDev/replverse\n---\n\nThe reason I named \
-            it \"Vulcanist\" was because the player has a special flame attack that can only \
-            be used so many times.\n\nGrab a pair of gaming headphones, get your keyboard ready, \
-            and get your gaming skills up and running.  Get ready to play my best game.").to_string(),
+            description: include_str!("game_description.txt").to_string(),
             repl_url: "https://replit.com/@IroncladDev/Vulcanist".to_string(),
             user_id: 4150864,
             icon_url: "https://replit.com/public/images/languages/nodejs.svg".to_string(),

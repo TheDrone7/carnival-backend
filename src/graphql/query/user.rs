@@ -21,7 +21,7 @@ impl UserQuery {
             .all(db)
             .await
             .expect("Unable to fetch users");
-        if users.len() > 0 {
+        if !users.is_empty() {
             let user = users[0].clone().into();
             Ok(user)
         } else {
