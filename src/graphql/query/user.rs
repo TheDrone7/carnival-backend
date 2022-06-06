@@ -28,6 +28,23 @@ impl UserQuery {
             Err(FieldError::new("User not found"))
         }
     }
+
+    pub async fn current_user<'ctx>(&self, ctx: &Context<'ctx>) -> FieldResult<UserType> {
+        let token = ctx.data_opt::<String>();
+        if token.is_none() {
+            return Err(FieldError::new("You are not logged in."));
+        }
+        let db = ctx.data_unchecked::<DatabaseConnection>();
+        let user_id = token.unwrap().parse::<i32>().unwrap();
+        let result: Option<user::Model> = User::find_by_id(user_id).one(db).await?;
+        if result.is_some() {
+            let user = result.unwrap().into();
+            Ok(user)
+        } else {
+            Err(FieldError::new("Invalid token, user not found."))
+        }
+    }
+
     pub async fn test_user(&self) -> FieldResult<UserType> {
         Ok(UserType::sample())
     }
