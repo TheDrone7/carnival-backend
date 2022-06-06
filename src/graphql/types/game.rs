@@ -19,7 +19,7 @@ impl GameType {
         Self {
             id: 1,
             title: "Vulcanist".to_string(),
-            description: include_str!("game_description.txt").to_string(),
+            description: include_str!("sample_game_description.txt").to_string(),
             repl_url: "https://replit.com/@IroncladDev/Vulcanist".to_string(),
             user_id: 4150864,
             icon_url: "https://replit.com/public/images/languages/nodejs.svg".to_string(),
