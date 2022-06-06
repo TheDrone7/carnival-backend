@@ -32,6 +32,7 @@ impl From<game_data::Model> for GameDataType {
 
 pub fn new_game_data(input: GameDataType) -> game_data::ActiveModel {
     let mut new_data = game_data::ActiveModel {
+        id: NotSet,
         game_id: Set(input.game_id),
         key: Set(input.key),
         value: NotSet,
