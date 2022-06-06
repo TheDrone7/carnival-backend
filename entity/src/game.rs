@@ -25,11 +25,19 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     User,
+    #[sea_orm(has_many = "super::game_data::Entity")]
+    GameData,
 }
 
 impl Related<super::user::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::User.def()
+    }
+}
+
+impl Related<super::game_data::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::GameData.def()
     }
 }
 
