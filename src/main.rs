@@ -18,7 +18,7 @@ async fn hello() -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
 }
 
-async fn handle_request(schema: web::Data<CarnivalSchema>, req: GraphQLRequest) -> GraphQLResponse {
+async fn handle_request(schema: Data<CarnivalSchema>, req: GraphQLRequest) -> GraphQLResponse {
     schema.execute(req.into_inner()).await.into()
 }
 
