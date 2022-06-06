@@ -6,12 +6,12 @@ use sea_orm::{entity::*, query::*, ActiveValue::Set, DatabaseConnection};
 #[derive(InputObject)]
 #[graphql(input_name = "UserInput")]
 pub struct UserType {
-    id: i32,
-    username: String,
-    avatar_url: String,
-    full_name: String,
-    bio: String,
-    is_hacker: bool,
+    pub id: i32,
+    pub username: String,
+    pub avatar_url: String,
+    pub full_name: String,
+    pub bio: String,
+    pub is_hacker: bool,
 }
 
 #[Object]

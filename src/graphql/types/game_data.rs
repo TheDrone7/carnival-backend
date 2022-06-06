@@ -5,9 +5,9 @@ use sea_orm::ActiveValue::{NotSet, Set};
 #[derive(SimpleObject, InputObject)]
 #[graphql(input_name = "GameDataInput")]
 pub struct GameDataType {
-    game_id: i32,
-    key: String,
-    value: Option<String>,
+    pub game_id: i32,
+    pub key: String,
+    pub value: Option<String>,
 }
 
 impl GameDataType {
