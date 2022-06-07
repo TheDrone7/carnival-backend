@@ -2,3 +2,4 @@
 schema.graphql
 .env
 .idea/
+.vscode/
