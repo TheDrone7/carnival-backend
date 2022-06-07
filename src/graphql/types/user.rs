@@ -1,4 +1,5 @@
 use crate::graphql::types::game::GameType;
+use async_graphql::connection::*;
 use async_graphql::*;
 use entity::{game, user};
 use sea_orm::{entity::*, query::*, ActiveValue::Set, DatabaseConnection};
@@ -12,6 +13,21 @@ pub struct UserType {
     pub full_name: String,
     pub bio: String,
     pub is_hacker: bool,
+}
+
+pub struct UserGameConnection;
+impl ConnectionNameType for UserGameConnection {
+    fn type_name<T: OutputType>() -> String {
+        "UserGameConnection".to_string()
+    }
+}
+
+pub struct UserGameEdge;
+
+impl EdgeNameType for UserGameEdge {
+    fn type_name<T: OutputType>() -> String {
+        "UserGameEdge".to_string()
+    }
 }
 
 #[Object]
@@ -40,15 +56,55 @@ impl UserType {
         self.is_hacker
     }
 
-    pub async fn games<'ctx>(&self, ctx: &Context<'ctx>) -> Vec<GameType> {
+    pub async fn games<'ctx>(
+        &self,
+        ctx: &Context<'ctx>,
+        after: Option<String>,
+        before: Option<String>,
+        first: Option<i32>,
+        last: Option<i32>,
+    ) -> Connection<i32, GameType, EmptyFields, EmptyFields, UserGameConnection, UserGameEdge> {
         let db = ctx.data_unchecked::<DatabaseConnection>();
+        let game_count: i32 = game::Entity::find()
+            .filter(game::Column::UserId.eq(self.id))
+            .order_by_asc(game::Column::Id)
+            .count(db)
+            .await
+            .expect("Failed to get number of games") as i32;
+
+        let mut start: i32 = match after {
+            Some(after) => after.parse().unwrap(),
+            None => 0,
+        };
+        let mut end: i32 = match before {
+            Some(before) => before.parse().unwrap(),
+            None => game_count,
+        };
+        if let Some(first) = first {
+            end = (start + first as i32).min(end);
+        }
+        if let Some(last) = last {
+            let last = last as i32;
+            start = if last > end - start { end } else { end - last };
+        }
+        let mut conn = Connection::new(start > 0, end < game_count);
+
         let games: Vec<game::Model> = game::Entity::find()
             .filter(game::Column::UserId.eq(self.id))
+            .filter(game::Column::Id.between(start, end))
             .order_by_asc(game::Column::Id)
             .all(db)
             .await
             .expect("Unable to fetch games");
-        games.into_iter().map(|g| g.into()).collect()
+
+        let mut games = games
+            .into_iter()
+            .map(|g| g.into())
+            .map(|g: GameType| Edge::new(g.id, g))
+            .collect();
+        conn.edges.append(&mut games);
+
+        conn
     }
 }
 
