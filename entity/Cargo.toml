@@ -5,4 +5,3 @@ edition = "2021"
 
 [dependencies]
 sea-orm = { version = "^0.8.0" }
-serde = "1.0.137"

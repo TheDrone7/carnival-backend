@@ -589,7 +589,6 @@ dependencies = [
  "entity",
  "migration",
  "sea-orm",
- "serde",
 ]
 
 [[package]]
@@ -996,7 +995,6 @@ name = "entity"
 version = "0.1.0"
 dependencies = [
  "sea-orm",
- "serde",
 ]
 
 [[package]]
