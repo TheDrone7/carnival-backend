@@ -9,6 +9,17 @@ pub struct UserQuery;
 
 #[Object]
 impl UserQuery {
+    pub async fn user<'ctx>(&self, ctx: &Context<'ctx>, id: i32) -> FieldResult<UserType> {
+        let db = ctx.data_unchecked::<DatabaseConnection>();
+        let result: Option<user::Model> = User::find_by_id(id).one(db).await?;
+        if result.is_some() {
+            let user = result.unwrap().into();
+            Ok(user)
+        } else {
+            Err(FieldError::new("Invalid ID, user not found."))
+        }
+    }
+
     pub async fn user_by_username<'ctx>(
         &self,
         ctx: &Context<'ctx>,

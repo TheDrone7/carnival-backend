@@ -13,6 +13,14 @@ impl GameMutation {
         input: GameType,
     ) -> FieldResult<GameType> {
         let db = ctx.data_unchecked::<DatabaseConnection>();
+        let user_id = ctx.data_opt::<String>();
+        if user_id.is_none() {
+            return Err(FieldError::new("Please sign-in with replit first."));
+        }
+        let user_id = user_id.unwrap().parse::<i32>().unwrap();
+        if input.user_id != user_id {
+            return Err(FieldError::new("Invalid request."));
+        }
         let game = new_game(input).insert(db).await?;
         Ok(game.into())
     }

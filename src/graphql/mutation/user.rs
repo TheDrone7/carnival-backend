@@ -13,6 +13,14 @@ impl UserMutation {
         input: UserType,
     ) -> FieldResult<UserType> {
         let db = ctx.data_unchecked::<DatabaseConnection>();
+        let user_id = ctx.data_opt::<String>();
+        if user_id.is_none() {
+            return Err(FieldError::new("Please sign-in with replit first."));
+        }
+        let user_id = user_id.unwrap().parse::<i32>().unwrap();
+        if input.id != user_id {
+            return Err(FieldError::new("Invalid request."));
+        }
         let user = new_user(input).insert(db).await?;
         Ok(user.into())
     }
