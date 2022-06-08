@@ -1,7 +1,7 @@
 use crate::graphql::types::user::{new_user, UserConfig, UserType};
 use async_graphql::*;
 use entity::user::Entity as User;
-use sea_orm::{entity::*, ActiveValue::Set, DatabaseConnection};
+use sea_orm::{entity::*, ActiveValue::Set, DatabaseConnection, DeleteResult};
 
 #[derive(Default)]
 pub struct UserMutation;
@@ -63,5 +63,31 @@ impl UserMutation {
         }
         let result_user = some_user.update(db).await?;
         Ok(result_user.into())
+    }
+
+    pub async fn delete_user<'ctx>(
+        &self,
+        ctx: &Context<'ctx>,
+        id: i32
+    ) -> FieldResult<UserType> {
+        let db = ctx.data_unchecked::<DatabaseConnection>();
+        let user_id = ctx.data_opt::<String>();
+        if user_id.is_none() {
+            return Err(FieldError::new("Please sign-in with replit first."));
+        }
+        let user_id = user_id.unwrap().parse::<i32>().unwrap();
+        if id != user_id {
+            return Err(FieldError::new("Invalid request."));
+        }
+        let some_user = User::find_by_id(id).one(db).await?;
+        if some_user.is_none() {
+            return Err(FieldError::new("User not found."));
+        }
+        let some_user = some_user.unwrap();
+        let res: DeleteResult = some_user.clone().delete(db).await?;
+        if res.rows_affected < 1 {
+            return Err(FieldError::new("Unable to delete user."));
+        }
+        Ok(some_user.into())
     }
 }
