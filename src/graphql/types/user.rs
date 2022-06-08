@@ -147,10 +147,9 @@ pub fn new_user(user_input: UserType) -> user::ActiveModel {
 
 #[derive(InputObject)]
 pub struct UserConfig {
-    id: Option<i32>,
-    username: Option<String>,
-    avatar_url: Option<String>,
-    full_name: Option<String>,
-    bio: Option<String>,
-    is_hacker: Option<bool>,
+    pub username: Option<String>,
+    pub avatar_url: Option<String>,
+    pub full_name: Option<String>,
+    pub bio: Option<String>,
+    pub is_hacker: Option<bool>,
 }
