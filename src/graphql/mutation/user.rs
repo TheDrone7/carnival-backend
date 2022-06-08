@@ -65,11 +65,7 @@ impl UserMutation {
         Ok(result_user.into())
     }
 
-    pub async fn delete_user<'ctx>(
-        &self,
-        ctx: &Context<'ctx>,
-        id: i32
-    ) -> FieldResult<UserType> {
+    pub async fn delete_user<'ctx>(&self, ctx: &Context<'ctx>, id: i32) -> FieldResult<UserType> {
         let db = ctx.data_unchecked::<DatabaseConnection>();
         let user_id = ctx.data_opt::<String>();
         if user_id.is_none() {

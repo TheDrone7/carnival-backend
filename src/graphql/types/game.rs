@@ -56,11 +56,9 @@ pub fn new_game(input: GameType) -> game::ActiveModel {
 
 #[derive(InputObject)]
 pub struct GameConfig {
-    id: Option<i32>,
-    title: Option<String>,
-    description: Option<String>,
-    repl_url: Option<String>,
-    user_id: Option<i32>,
-    icon_url: Option<String>,
-    cover_url: Option<String>,
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub repl_url: Option<String>,
+    pub icon_url: Option<String>,
+    pub cover_url: Option<String>,
 }
