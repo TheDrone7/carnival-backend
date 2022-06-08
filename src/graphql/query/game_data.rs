@@ -23,7 +23,7 @@ impl GameDataQuery {
             return Err(FieldError::new("Please sign-in with replit first."));
         }
         let user_id = user_id.unwrap().parse::<i32>().unwrap();
-        let game: Option<game::Model> = Game::find_by_id(user_id).one(db).await?;
+        let game: Option<game::Model> = Game::find_by_id(game_id).one(db).await?;
         if game.is_none() {
             return Err(FieldError::new("Invalid request, no such game found."));
         } else if game.unwrap().user_id != user_id {

@@ -4,7 +4,7 @@ use entity::game;
 use entity::game::Entity as Game;
 use entity::game_data;
 use entity::game_data::Entity as GameData;
-use sea_orm::{entity::*, query::*, DatabaseConnection};
+use sea_orm::{entity::*, query::*, DatabaseConnection, DeleteResult};
 
 #[derive(Default)]
 pub struct GameDataMutation;
@@ -24,7 +24,7 @@ impl GameDataMutation {
             return Err(FieldError::new("Please sign-in with replit first."));
         }
         let user_id = user_id.unwrap().parse::<i32>().unwrap();
-        let game: Option<game::Model> = Game::find_by_id(user_id).one(db).await?;
+        let game: Option<game::Model> = Game::find_by_id(game_id).one(db).await?;
         if game.is_none() {
             return Err(FieldError::new("Invalid request, no such game found."));
         } else if game.unwrap().user_id != user_id {
@@ -55,5 +55,53 @@ impl GameDataMutation {
             result_data = new_data.update(db).await?;
         }
         Ok(result_data.into())
+    }
+
+    pub async fn delete_game_data<'ctx>(
+        &self,
+        ctx: &Context<'ctx>,
+        game_id: i32,
+        key: Option<String>,
+    ) -> FieldResult<Vec<GameDataType>> {
+        let db = ctx.data_unchecked::<DatabaseConnection>();
+        let user_id = ctx.data_opt::<String>();
+        if user_id.is_none() {
+            return Err(FieldError::new("Please sign-in with replit first."));
+        }
+        let user_id = user_id.unwrap().parse::<i32>().unwrap();
+        let game: Option<game::Model> = Game::find_by_id(game_id).one(db).await?;
+        if game.is_none() {
+            return Err(FieldError::new("Invalid request, no such game found."));
+        } else if game.unwrap().user_id != user_id {
+            return Err(FieldError::new(
+                "Unauthorized, you are not the owner of this game.",
+            ));
+        }
+
+        let mut query = GameData::find().filter(game_data::Column::GameId.eq(game_id));
+        let some_key = key.clone();
+        if let Some(some_key) = some_key {
+            query = query.filter(game_data::Column::Key.eq(some_key));
+        }
+        let data: Vec<game_data::Model> = query
+            .order_by_asc(game_data::Column::Id)
+            .all(db)
+            .await
+            .expect("Unable to fetch game data");
+
+        if data.is_empty() {
+            return Err(FieldError::new("No such data found."));
+        } else {
+            let mut query = GameData::delete_many().filter(game_data::Column::GameId.eq(game_id));
+            let some_key = key.clone();
+            if let Some(some_key) = some_key {
+                query = query.filter(game_data::Column::Key.eq(some_key));
+            }
+            let res: DeleteResult = query.exec(db).await.expect("Unable to delete game data");
+            if res.rows_affected != data.len() as u64 {
+                return Err(FieldError::new("Unable to delete game data."));
+            }
+        }
+        Ok(data.into_iter().map(|d| d.into()).collect())
     }
 }
