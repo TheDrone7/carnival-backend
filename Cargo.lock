@@ -584,10 +584,12 @@ dependencies = [
  "actix-web",
  "async-graphql",
  "async-graphql-actix-web",
+ "base64",
  "dotenv",
  "dotenv_codegen",
  "entity",
  "migration",
+ "rand",
  "sea-orm",
 ]
 
