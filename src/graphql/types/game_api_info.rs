@@ -36,9 +36,7 @@ impl From<game_api_info::Model> for GameApiInfoType {
 
 pub fn new_game_api_info(id: i32) -> game_api_info::ActiveModel {
     let secret: Vec<u8> = thread_rng().sample_iter(&Alphanumeric).take(16).collect();
-    let secret = str::from_utf8(secret.as_slice().as_ref())
-        .unwrap()
-        .to_string();
+    let secret = str::from_utf8(secret.as_slice()).unwrap().to_string();
     let token = encode(id.to_string() + ":" + &secret);
     game_api_info::ActiveModel {
         game_id: Set(id),
