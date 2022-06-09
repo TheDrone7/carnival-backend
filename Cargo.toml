@@ -17,3 +17,11 @@ actix-web = "4.0.1"
 async-graphql = "4.0.1"
 async-graphql-actix-web = "4.0.1"
 sea-orm = { version = "^0.8.0", features = ["sqlx-postgres", "runtime-actix-rustls", "macros"] }
+
+[profile.release]
+opt-level = 3
+codegen-units = 1
+debug = "false"
+strip = "symbols"
+panic = "abort"
+lto = "fat"
