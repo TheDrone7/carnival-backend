@@ -1,6 +1,9 @@
 use crate::graphql::types::game_api_info::{new_game_api_info, GameApiInfoType};
 use async_graphql::*;
-use entity::{game::Entity as Game, game_api_info, game_api_info::Entity as GameApiInfo};
+use entity::{
+    game::Entity as Game, game_api_info, game_api_info::Entity as GameApiInfo,
+    user::Model as UserModel,
+};
 use sea_orm::{entity::*, DatabaseConnection};
 
 #[derive(Default)]
@@ -14,11 +17,11 @@ impl GameApiInfoMutation {
         id: i32,
     ) -> FieldResult<GameApiInfoType> {
         let db = ctx.data_unchecked::<DatabaseConnection>();
-        let user_id = ctx.data_opt::<String>();
+        let user_id = ctx.data_unchecked::<Option<UserModel>>();
         if user_id.is_none() {
             return Err(FieldError::new("Please sign-in with replit first."));
         }
-        let user_id = user_id.unwrap().parse::<i32>().unwrap();
+        let user_id = user_id.clone().unwrap().id;
         let some_game = Game::find_by_id(id).one(db).await?;
         if some_game.is_none() {
             return Err(FieldError::new("Game not found."));

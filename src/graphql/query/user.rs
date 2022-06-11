@@ -12,12 +12,10 @@ impl UserQuery {
     pub async fn user<'ctx>(&self, ctx: &Context<'ctx>, id: i32) -> FieldResult<UserType> {
         let db = ctx.data_unchecked::<DatabaseConnection>();
         let result: Option<user::Model> = User::find_by_id(id).one(db).await?;
-        if result.is_some() {
-            let user = result.unwrap().into();
-            Ok(user)
-        } else {
-            Err(FieldError::new("Invalid ID, user not found."))
+        if result.is_none() {
+            return Err(FieldError::new("Invalid ID, user not found."));
         }
+        Ok(result.unwrap().into())
     }
 
     pub async fn user_by_username<'ctx>(
@@ -32,28 +30,18 @@ impl UserQuery {
             .all(db)
             .await
             .expect("Unable to fetch users");
-        if !users.is_empty() {
-            let user = users[0].clone().into();
-            Ok(user)
-        } else {
-            Err(FieldError::new("User not found"))
+        if users.is_empty() {
+            return Err(FieldError::new("User not found"));
         }
+        Ok(users[0].clone().into())
     }
 
     pub async fn current_user<'ctx>(&self, ctx: &Context<'ctx>) -> FieldResult<UserType> {
-        let token = ctx.data_opt::<String>();
-        if token.is_none() {
-            return Err(FieldError::new("You are not logged in."));
+        let user = ctx.data_unchecked::<Option<user::Model>>();
+        if let Some(user) = user {
+            return Ok(user.clone().into());
         }
-        let db = ctx.data_unchecked::<DatabaseConnection>();
-        let user_id = token.unwrap().parse::<i32>().unwrap();
-        let result: Option<user::Model> = User::find_by_id(user_id).one(db).await?;
-        if result.is_some() {
-            let user = result.unwrap().into();
-            Ok(user)
-        } else {
-            Err(FieldError::new("Invalid token, user not found."))
-        }
+        Err(FieldError::new("You are not logged in."))
     }
 
     pub async fn test_user(&self) -> FieldResult<UserType> {

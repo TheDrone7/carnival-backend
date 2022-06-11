@@ -1,6 +1,6 @@
 use crate::graphql::types::user::{new_user, UserConfig, UserType};
 use async_graphql::*;
-use entity::user::Entity as User;
+use entity::user::Model as UserModel;
 use sea_orm::{entity::*, ActiveValue::Set, DatabaseConnection, DeleteResult};
 
 #[derive(Default)]
@@ -14,11 +14,11 @@ impl UserMutation {
         input: UserType,
     ) -> FieldResult<UserType> {
         let db = ctx.data_unchecked::<DatabaseConnection>();
-        let user_id = ctx.data_opt::<String>();
+        let user_id = ctx.data_opt::<i32>();
         if user_id.is_none() {
             return Err(FieldError::new("Please sign-in with replit first."));
         }
-        let user_id = user_id.unwrap().parse::<i32>().unwrap();
+        let user_id: i32 = user_id.clone().unwrap().to_owned();
         if input.id != user_id {
             return Err(FieldError::new("Invalid request."));
         }
@@ -33,19 +33,16 @@ impl UserMutation {
         input: UserConfig,
     ) -> FieldResult<UserType> {
         let db = ctx.data_unchecked::<DatabaseConnection>();
-        let user_id = ctx.data_opt::<String>();
+        let user_id = ctx.data_opt::<UserModel>();
         if user_id.is_none() {
             return Err(FieldError::new("Please sign-in with replit first."));
         }
-        let user_id = user_id.unwrap().parse::<i32>().unwrap();
+        let some_user = user_id.unwrap();
+        let user_id = some_user.id;
+        let mut some_user = some_user.clone().into_active_model();
         if id != user_id {
             return Err(FieldError::new("Invalid request."));
         }
-        let some_user = User::find_by_id(id).one(db).await?;
-        if some_user.is_none() {
-            return Err(FieldError::new("User not found."));
-        }
-        let mut some_user = some_user.unwrap().into_active_model();
         if input.username.is_some() {
             some_user.username = Set(input.username.unwrap());
         }
@@ -67,23 +64,19 @@ impl UserMutation {
 
     pub async fn delete_user<'ctx>(&self, ctx: &Context<'ctx>, id: i32) -> FieldResult<UserType> {
         let db = ctx.data_unchecked::<DatabaseConnection>();
-        let user_id = ctx.data_opt::<String>();
-        if user_id.is_none() {
+        let some_user = ctx.data_opt::<UserModel>();
+        if some_user.is_none() {
             return Err(FieldError::new("Please sign-in with replit first."));
         }
-        let user_id = user_id.unwrap().parse::<i32>().unwrap();
+        let some_user = some_user.unwrap();
+        let user_id = some_user.id;
         if id != user_id {
             return Err(FieldError::new("Invalid request."));
         }
-        let some_user = User::find_by_id(id).one(db).await?;
-        if some_user.is_none() {
-            return Err(FieldError::new("User not found."));
-        }
-        let some_user = some_user.unwrap();
         let res: DeleteResult = some_user.clone().delete(db).await?;
         if res.rows_affected < 1 {
             return Err(FieldError::new("Unable to delete user."));
         }
-        Ok(some_user.into())
+        Ok(some_user.clone().into())
     }
 }

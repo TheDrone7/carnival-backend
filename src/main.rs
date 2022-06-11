@@ -6,16 +6,16 @@ pub mod auth;
 pub mod graphql;
 
 use actix_web::{
-    get, guard, http::header::HeaderMap, web, web::Data, App, HttpRequest, HttpResponse,
-    HttpServer, Responder, Result,
+    get, guard, web, web::Data, App, HttpRequest, HttpResponse, HttpServer, Responder, Result,
 };
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use async_graphql::*;
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
 use dotenv::dotenv;
 use migration::{Migrator, MigratorTrait};
+use sea_orm::DatabaseConnection;
 
-use crate::auth::authenticate;
+use crate::auth::{authenticate, check_api_key};
 use graphql::{mutation::Mutation, query::Query, CarnivalSchema};
 
 #[get("/")]
@@ -25,13 +25,24 @@ async fn hello() -> impl Responder {
 
 async fn handle_request(
     schema: Data<CarnivalSchema>,
+    db: Data<DatabaseConnection>,
     req: HttpRequest,
     gql_request: GraphQLRequest,
 ) -> GraphQLResponse {
     let mut request = gql_request.into_inner();
-    let user_id = authenticate(req.headers().clone());
-    if user_id.is_some() {
-        request = request.data(user_id.unwrap());
+    let user = authenticate(req.headers().clone(), &db).await;
+    request = request.data(user.clone());
+    let api_info = check_api_key(req.headers().clone(), &db).await;
+    request = request.data(api_info);
+    if req.headers().contains_key("x-replit-user-id") {
+        request = request.data(
+            req.headers()
+                .get("x-replit-user-id")
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .parse::<i32>(),
+        );
     }
     schema.execute(request).await.into()
 }
@@ -58,7 +69,7 @@ async fn main() -> std::io::Result<()> {
         .expect("Unable to run migrations");
 
     let schema = Schema::build(Query::default(), Mutation::default(), EmptySubscription)
-        .data(connection)
+        .data(connection.clone())
         .finish();
 
     println!("Server running at: http://localhost:8000");
@@ -66,6 +77,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(schema.clone()))
+            .app_data(Data::new(connection.clone()))
             .service(hello)
             .service(
                 web::resource("/graphql")

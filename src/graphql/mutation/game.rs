@@ -1,6 +1,8 @@
 use crate::graphql::types::game::{new_game, GameConfig, GameType};
 use async_graphql::*;
-use entity::{game::Entity as Game, game_data, game_data::Entity as GameData};
+use entity::{
+    game::Entity as Game, game_data, game_data::Entity as GameData, user::Model as UserModel,
+};
 use sea_orm::{entity::*, DatabaseConnection, QueryFilter};
 
 #[derive(Default)]
@@ -14,12 +16,11 @@ impl GameMutation {
         input: GameType,
     ) -> FieldResult<GameType> {
         let db = ctx.data_unchecked::<DatabaseConnection>();
-        let user_id = ctx.data_opt::<String>();
-        if user_id.is_none() {
+        let some_user = ctx.data_unchecked::<Option<UserModel>>();
+        if some_user.is_none() {
             return Err(FieldError::new("Please sign-in with replit first."));
         }
-        let user_id = user_id.unwrap().parse::<i32>().unwrap();
-        if input.user_id != user_id {
+        if input.user_id != some_user.clone().unwrap().id {
             return Err(FieldError::new("Invalid request."));
         }
         let game = new_game(input).insert(db).await?;
@@ -33,11 +34,12 @@ impl GameMutation {
         input: GameConfig,
     ) -> FieldResult<GameType> {
         let db = ctx.data_unchecked::<DatabaseConnection>();
-        let user_id = ctx.data_opt::<String>();
-        if user_id.is_none() {
+        let some_user = ctx.data_unchecked::<Option<UserModel>>();
+        if some_user.is_none() {
             return Err(FieldError::new("Please sign-in with replit first."));
         }
-        let user_id = user_id.unwrap().parse::<i32>().unwrap();
+        let some_user = some_user.clone().unwrap();
+        let user_id = some_user.id;
         let some_game = Game::find_by_id(id).one(db).await?;
         if some_game.is_none() {
             return Err(FieldError::new("Game not found."));
@@ -68,11 +70,11 @@ impl GameMutation {
 
     pub async fn delete_game<'ctx>(&self, ctx: &Context<'ctx>, id: i32) -> FieldResult<GameType> {
         let db = ctx.data_unchecked::<DatabaseConnection>();
-        let user_id = ctx.data_opt::<String>();
-        if user_id.is_none() {
+        let some_user = ctx.data_unchecked::<Option<UserModel>>();
+        if some_user.is_none() {
             return Err(FieldError::new("Please sign-in with replit first."));
         }
-        let user_id = user_id.unwrap().parse::<i32>().unwrap();
+        let user_id = some_user.clone().unwrap().id;
         let some_game = Game::find_by_id(id).one(db).await?;
         if some_game.is_none() {
             return Err(FieldError::new("Game not found."));
