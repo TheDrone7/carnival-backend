@@ -30,7 +30,7 @@ impl GameDataQuery {
         Ok(data.into_iter().map(|d| d.into()).collect())
     }
 
-    pub async fn test_game_data(&self) -> FieldResult<GameDataType> {
+    pub async fn sample_game_data(&self) -> FieldResult<GameDataType> {
         Ok(GameDataType::sample())
     }
 }

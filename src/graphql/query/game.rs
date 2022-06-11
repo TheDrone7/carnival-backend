@@ -20,7 +20,7 @@ impl GameQuery {
         }
     }
 
-    pub async fn test_game(&self) -> FieldResult<GameType> {
+    pub async fn sample_game(&self) -> FieldResult<GameType> {
         Ok(GameType::sample())
     }
 }

@@ -44,7 +44,7 @@ impl UserQuery {
         Err(FieldError::new("You are not logged in."))
     }
 
-    pub async fn test_user(&self) -> FieldResult<UserType> {
+    pub async fn sample_user(&self) -> FieldResult<UserType> {
         Ok(UserType::sample())
     }
 }

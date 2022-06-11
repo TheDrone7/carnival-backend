@@ -37,7 +37,7 @@ impl GameApiInfoQuery {
         Ok(result.unwrap().into())
     }
 
-    pub async fn test_game_api(&self) -> FieldResult<GameApiInfoType> {
+    pub async fn sample_game_api(&self) -> FieldResult<GameApiInfoType> {
         Ok(GameApiInfoType::sample())
     }
 }
