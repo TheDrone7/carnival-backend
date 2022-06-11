@@ -3,3 +3,4 @@ schema.graphql
 .env
 .idea/
 .vscode/
+*.log

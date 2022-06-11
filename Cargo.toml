@@ -9,6 +9,9 @@ members=[".", "migration", "entity"]
 [dependencies]
 migration = { path = "migration" }
 entity = { path = "entity" }
+log = "0.4.17"
+fern = "0.6.1"
+chrono = "0.4.19"
 rand = "0.8.5"
 base64 = "0.13.0"
 dotenv = "0.15.0"
