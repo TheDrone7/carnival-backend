@@ -22,7 +22,6 @@ impl GameDataMutation {
             return Err(FieldError::new("Invalid API Key found."));
         }
         let game_id = some_game.clone().unwrap().id;
-
         let data: Vec<game_data::Model> = GameData::find()
             .filter(game_data::Column::GameId.eq(game_id))
             .filter(game_data::Column::Key.eq(key.clone()))
