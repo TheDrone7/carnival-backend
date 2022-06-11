@@ -11,10 +11,12 @@ pub async fn authenticate(headers: HeaderMap, db: &DatabaseConnection) -> Option
     let user_id = headers.get("x-replit-user-id");
     if let Some(user_id) = user_id {
         if !user_id.is_empty() {
-            let user_id = user_id.to_str().unwrap().parse::<i32>().unwrap();
-            let user = User::find_by_id(user_id).one(db).await;
-            if let Ok(Some(user)) = user {
-                return Some(user);
+            let user_id = user_id.to_str().unwrap().parse::<i32>();
+            if let Ok(user_id) = user_id {
+                let user = User::find_by_id(user_id).one(db).await;
+                if let Ok(Some(user)) = user {
+                    return Some(user);
+                }
             }
         }
     }

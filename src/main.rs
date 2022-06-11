@@ -57,10 +57,11 @@ async fn handle_request(
             .unwrap()
             .to_str()
             .unwrap()
-            .parse::<i32>()
-            .expect("Invalid user id");
-        request = request.data(user_id);
-        log_message.push_str(&format!("\nUser ID: {}", user_id));
+            .parse::<i32>();
+        if let Ok(user_id) = user_id {
+            request = request.data(user_id);
+            log_message.push_str(&format!("\nUser ID: {}", user_id));
+        }
     }
     debug!("{}", log_message);
     schema.execute(request).await.into()
