@@ -34,7 +34,7 @@ impl GameApiInfoQuery {
         if result.is_none() {
             return FieldResult::Err(FieldError::new("Game not found."));
         }
-        return Ok(result.unwrap().into());
+        Ok(result.unwrap().into())
     }
 
     pub async fn test_game_api(&self) -> FieldResult<GameApiInfoType> {

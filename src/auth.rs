@@ -29,7 +29,7 @@ pub async fn check_api_key(headers: HeaderMap, db: &DatabaseConnection) -> Optio
     if let Some(game_token) = game_token {
         let result = base64::decode(game_token).unwrap();
         let result = std::str::from_utf8(result.as_slice()).unwrap().to_string();
-        let parts: Vec<&str> = result.split(":").collect();
+        let parts: Vec<&str> = result.split(':').collect();
         if parts.len() == 2 {
             let game_id = parts[0].parse::<i32>();
             if let Ok(game_id) = game_id {
@@ -46,5 +46,5 @@ pub async fn check_api_key(headers: HeaderMap, db: &DatabaseConnection) -> Optio
             }
         }
     }
-    return None;
+    None
 }

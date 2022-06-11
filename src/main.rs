@@ -38,7 +38,7 @@ async fn handle_request(
         request
             .operation_name
             .clone()
-            .unwrap_or("query".to_string())
+            .unwrap_or_else(|| "query".to_string())
     );
     let user = authenticate(req.headers().clone(), &db).await;
     request = request.data(user.clone());

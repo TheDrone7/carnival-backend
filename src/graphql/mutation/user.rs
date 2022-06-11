@@ -18,7 +18,7 @@ impl UserMutation {
         if user_id.is_none() {
             return Err(FieldError::new("You are not logged in."));
         }
-        let user_id: i32 = user_id.clone().unwrap().to_owned();
+        let user_id: i32 = user_id.unwrap().to_owned();
         if input.id != user_id {
             return Err(FieldError::new("Bad request. Invalid input."));
         }
