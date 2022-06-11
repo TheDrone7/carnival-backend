@@ -16,11 +16,11 @@ impl UserMutation {
         let db = ctx.data_unchecked::<DatabaseConnection>();
         let user_id = ctx.data_opt::<i32>();
         if user_id.is_none() {
-            return Err(FieldError::new("Please sign-in with replit first."));
+            return Err(FieldError::new("You are not logged in."));
         }
         let user_id: i32 = user_id.clone().unwrap().to_owned();
         if input.id != user_id {
-            return Err(FieldError::new("Invalid request."));
+            return Err(FieldError::new("Bad request. Invalid input."));
         }
         let user = new_user(input).insert(db).await?;
         Ok(user.into())
@@ -29,20 +29,15 @@ impl UserMutation {
     pub async fn update_user<'ctx>(
         &self,
         ctx: &Context<'ctx>,
-        id: i32,
         input: UserConfig,
     ) -> FieldResult<UserType> {
         let db = ctx.data_unchecked::<DatabaseConnection>();
         let user_id = ctx.data_opt::<UserModel>();
         if user_id.is_none() {
-            return Err(FieldError::new("Please sign-in with replit first."));
+            return Err(FieldError::new("You are not logged in."));
         }
         let some_user = user_id.unwrap();
-        let user_id = some_user.id;
         let mut some_user = some_user.clone().into_active_model();
-        if id != user_id {
-            return Err(FieldError::new("Invalid request."));
-        }
         if input.username.is_some() {
             some_user.username = Set(input.username.unwrap());
         }
@@ -62,17 +57,13 @@ impl UserMutation {
         Ok(result_user.into())
     }
 
-    pub async fn delete_user<'ctx>(&self, ctx: &Context<'ctx>, id: i32) -> FieldResult<UserType> {
+    pub async fn delete_user<'ctx>(&self, ctx: &Context<'ctx>) -> FieldResult<UserType> {
         let db = ctx.data_unchecked::<DatabaseConnection>();
         let some_user = ctx.data_opt::<UserModel>();
         if some_user.is_none() {
-            return Err(FieldError::new("Please sign-in with replit first."));
+            return Err(FieldError::new("You are not logged in."));
         }
         let some_user = some_user.unwrap();
-        let user_id = some_user.id;
-        if id != user_id {
-            return Err(FieldError::new("Invalid request."));
-        }
         let res: DeleteResult = some_user.clone().delete(db).await?;
         if res.rows_affected < 1 {
             return Err(FieldError::new("Unable to delete user."));

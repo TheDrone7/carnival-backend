@@ -18,7 +18,7 @@ impl GameDataQuery {
         let db = ctx.data_unchecked::<DatabaseConnection>();
         let some_game = ctx.data_unchecked::<Option<game::Model>>();
         if some_game.is_none() {
-            return Err(FieldError::new("Invalid API Key found."));
+            return Err(FieldError::new("Invalid API Key"));
         }
         let game_id = some_game.clone().unwrap().id;
         let mut query = GameData::find().filter(game_data::Column::GameId.eq(game_id));

@@ -19,7 +19,7 @@ impl GameDataMutation {
         let db = ctx.data_unchecked::<DatabaseConnection>();
         let some_game = ctx.data_unchecked::<Option<game::Model>>();
         if some_game.is_none() {
-            return Err(FieldError::new("Invalid API Key found."));
+            return Err(FieldError::new("Invalid API Key"));
         }
         let game_id = some_game.clone().unwrap().id;
         let data: Vec<game_data::Model> = GameData::find()
@@ -55,7 +55,7 @@ impl GameDataMutation {
         let db = ctx.data_unchecked::<DatabaseConnection>();
         let some_game = ctx.data_unchecked::<Option<game::Model>>();
         if some_game.is_none() {
-            return Err(FieldError::new("Invalid API Key found."));
+            return Err(FieldError::new("Invalid API Key"));
         }
         let game_id = some_game.clone().unwrap().id;
         let mut query = GameData::find().filter(game_data::Column::GameId.eq(game_id));
@@ -77,7 +77,7 @@ impl GameDataMutation {
             if let Some(some_key) = some_key {
                 query = query.filter(game_data::Column::Key.eq(some_key));
             }
-            let res: DeleteResult = query.exec(db).await.expect("Unable to delete game data");
+            let res: DeleteResult = query.exec(db).await?;
             if res.rows_affected != data.len() as u64 {
                 return Err(FieldError::new("Unable to delete game data."));
             }

@@ -19,9 +19,7 @@ impl GameApiInfoQuery {
         let db = ctx.data_unchecked::<DatabaseConnection>();
         let current_user = ctx.data_unchecked::<Option<UserModel>>();
         if current_user.is_none() {
-            return FieldResult::Err(FieldError::new(
-                "You must be logged in to view this information.",
-            ));
+            return FieldResult::Err(FieldError::new("You are not logged in."));
         }
         let current_user = current_user.clone().unwrap();
         let req_game: Option<game::Model> = Game::find_by_id(id).one(db).await?;
@@ -30,7 +28,7 @@ impl GameApiInfoQuery {
         }
         let req_game = req_game.unwrap();
         if req_game.user_id != current_user.id {
-            return Err(FieldError::new("Unauthorized"));
+            return Err(FieldError::new("You are not authorized."));
         }
         let result: Option<game_api_info::Model> = GameApiInfo::find_by_id(id).one(db).await?;
         if result.is_none() {

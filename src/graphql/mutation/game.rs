@@ -18,10 +18,10 @@ impl GameMutation {
         let db = ctx.data_unchecked::<DatabaseConnection>();
         let some_user = ctx.data_unchecked::<Option<UserModel>>();
         if some_user.is_none() {
-            return Err(FieldError::new("Please sign-in with replit first."));
+            return Err(FieldError::new("You are not logged in."));
         }
         if input.user_id != some_user.clone().unwrap().id {
-            return Err(FieldError::new("Invalid request."));
+            return Err(FieldError::new("Bad request. Invalid input."));
         }
         let game = new_game(input).insert(db).await?;
         Ok(game.into())
@@ -36,7 +36,7 @@ impl GameMutation {
         let db = ctx.data_unchecked::<DatabaseConnection>();
         let some_user = ctx.data_unchecked::<Option<UserModel>>();
         if some_user.is_none() {
-            return Err(FieldError::new("Please sign-in with replit first."));
+            return Err(FieldError::new("You are not logged in."));
         }
         let some_user = some_user.clone().unwrap();
         let user_id = some_user.id;
@@ -46,7 +46,7 @@ impl GameMutation {
         }
         let some_game = some_game.unwrap();
         if some_game.user_id != user_id {
-            return Err(FieldError::new("Unauthorized."));
+            return Err(FieldError::new("You are not authorized."));
         }
         let mut some_game = some_game.into_active_model();
         if input.title.is_some() {
@@ -72,7 +72,7 @@ impl GameMutation {
         let db = ctx.data_unchecked::<DatabaseConnection>();
         let some_user = ctx.data_unchecked::<Option<UserModel>>();
         if some_user.is_none() {
-            return Err(FieldError::new("Please sign-in with replit first."));
+            return Err(FieldError::new("You are not logged in."));
         }
         let user_id = some_user.clone().unwrap().id;
         let some_game = Game::find_by_id(id).one(db).await?;
@@ -81,7 +81,7 @@ impl GameMutation {
         }
         let some_game = some_game.unwrap();
         if some_game.user_id != user_id {
-            return Err(FieldError::new("Unauthorized."));
+            return Err(FieldError::new("You are not authorized."));
         }
         GameData::delete_many()
             .filter(game_data::Column::GameId.eq(id))

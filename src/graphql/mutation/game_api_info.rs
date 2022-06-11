@@ -19,7 +19,7 @@ impl GameApiInfoMutation {
         let db = ctx.data_unchecked::<DatabaseConnection>();
         let user_id = ctx.data_unchecked::<Option<UserModel>>();
         if user_id.is_none() {
-            return Err(FieldError::new("Please sign-in with replit first."));
+            return Err(FieldError::new("You are not logged in."));
         }
         let user_id = user_id.clone().unwrap().id;
         let some_game = Game::find_by_id(id).one(db).await?;
@@ -28,7 +28,7 @@ impl GameApiInfoMutation {
         }
         let some_game = some_game.unwrap();
         if some_game.user_id != user_id {
-            return Err(FieldError::new("Unauthorized."));
+            return Err(FieldError::new("You are not authorized."));
         }
         let api_info: Option<game_api_info::Model> = GameApiInfo::find_by_id(id).one(db).await?;
         let new_api_info = new_game_api_info(id);
