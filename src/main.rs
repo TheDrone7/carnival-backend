@@ -6,8 +6,8 @@ pub mod auth;
 pub mod graphql;
 pub mod logger;
 
-use actix_files as fs;
-use actix_web::{guard, web, web::Data, App, HttpRequest, HttpResponse, HttpServer, Result};
+use actix_web::Responder;
+use actix_web::{get, guard, web, web::Data, App, HttpRequest, HttpResponse, HttpServer, Result};
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use async_graphql::*;
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
@@ -19,6 +19,13 @@ use sea_orm::DatabaseConnection;
 
 use crate::auth::{authenticate, check_api_key};
 use graphql::{mutation::Mutation, query::Query, CarnivalSchema};
+
+#[get("/")]
+async fn home_page() -> impl Responder {
+    HttpResponse::Ok().content_type("text/html").body(format!(
+        "Welcome to the <a href=\"/graphql\">Carnival GraphQL API</a>"
+    ))
+}
 
 async fn handle_request(
     schema: Data<CarnivalSchema>,
@@ -94,7 +101,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(Data::new(schema.clone()))
             .app_data(Data::new(connection.clone()))
-            .service(fs::Files::new("/", "./static/").index_file("index.html"))
+            .service(home_page)
             .service(
                 web::resource("/graphql")
                     .guard(guard::Post())
