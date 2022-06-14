@@ -41,30 +41,23 @@ async fn handle_request(
             .clone()
             .unwrap_or_else(|| "query".to_string())
     );
-    let user = authenticate(req.headers().clone(), &db).await;
+    let (user_id, user) = authenticate(req.headers().clone(), &db).await;
     request = request.data(user.clone());
     if let Some(user) = user {
         log_message.push_str(&format!("\nAuthorized User: {}", user.username));
+    }
+    if let Some(user_id) = user_id {
+        request = request.data(user_id);
+        log_message.push_str(&format!("\nUser ID: {}", user_id));
     }
     let api_info = check_api_key(req.headers().clone(), &db).await;
     request = request.data(api_info.clone());
     if let Some(game) = api_info {
         log_message.push_str(&format!("\nAuthorized Game: {}", game.title));
     }
-    if req.headers().contains_key("x-replit-user-id") {
-        let user_id = req
-            .headers()
-            .get("x-replit-user-id")
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .parse::<i32>();
-        if let Ok(user_id) = user_id {
-            request = request.data(user_id);
-            log_message.push_str(&format!("\nUser ID: {}", user_id));
-        }
+    if !log_message.contains("Introspection") {
+        debug!("{}", log_message);
     }
-    debug!("{}", log_message);
     schema.execute(request).await.into()
 }
 

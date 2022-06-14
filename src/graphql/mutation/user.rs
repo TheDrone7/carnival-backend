@@ -32,12 +32,11 @@ impl UserMutation {
         input: UserConfig,
     ) -> FieldResult<UserType> {
         let db = ctx.data_unchecked::<DatabaseConnection>();
-        let user_id = ctx.data_opt::<UserModel>();
-        if user_id.is_none() {
+        let some_user = ctx.data_unchecked::<Option<UserModel>>();
+        if some_user.is_none() {
             return Err(FieldError::new("You are not logged in."));
         }
-        let some_user = user_id.unwrap();
-        let mut some_user = some_user.clone().into_active_model();
+        let mut some_user = some_user.clone().unwrap().into_active_model();
         if input.username.is_some() {
             some_user.username = Set(input.username.unwrap());
         }
@@ -59,15 +58,15 @@ impl UserMutation {
 
     pub async fn delete_user<'ctx>(&self, ctx: &Context<'ctx>) -> FieldResult<UserType> {
         let db = ctx.data_unchecked::<DatabaseConnection>();
-        let some_user = ctx.data_opt::<UserModel>();
+        let some_user = ctx.data_unchecked::<Option<UserModel>>();
         if some_user.is_none() {
             return Err(FieldError::new("You are not logged in."));
         }
-        let some_user = some_user.unwrap();
+        let some_user = some_user.clone().unwrap();
         let res: DeleteResult = some_user.clone().delete(db).await?;
         if res.rows_affected < 1 {
             return Err(FieldError::new("Unable to delete user."));
         }
-        Ok(some_user.clone().into())
+        Ok(some_user.into())
     }
 }
