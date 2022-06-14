@@ -7,18 +7,30 @@ use entity::{
     game_api_info::Entity as GameApiInfo,
     user::{Entity as User, Model as UserModel},
 };
-use log::warn;
+use log::{error, warn};
 use sea_orm::{entity::*, DatabaseConnection};
+use std::env;
 
 pub async fn authenticate(
     headers: HeaderMap,
     db: &DatabaseConnection,
 ) -> (Option<i32>, Option<UserModel>) {
+    let pass = env::vars().find(|k| k.0 == "ENCRYPTION_KEY");
+    if pass.is_none() {
+        error!("No encryption key found");
+        return (None, None);
+    };
+    let nonce = env::vars().find(|k| k.0 == "ENCRYPTION_NONCE");
+    if nonce.is_none() {
+        error!("No encryption nonce found");
+        return (None, None);
+    };
+    let password = pass.unwrap().1;
+    let iv = nonce.unwrap().1;
     let user_id = headers.get("x-carnival-user-token");
     if let Some(user_id) = user_id {
         let user_id = user_id.to_str().unwrap();
-        let iv = "%WSoEMW%R48$";
-        let key = Key::from_slice(b"*Vhp?V_Q5&^g6Ej6034rBQOB+w?uF0hu");
+        let key = Key::from_slice(password.as_bytes());
         let cipher = Aes256Gcm::new(key);
         let nonce = Nonce::from_slice(iv.as_bytes());
 
