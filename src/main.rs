@@ -22,7 +22,9 @@ use graphql::{mutation::Mutation, query::Query, CarnivalSchema};
 
 #[get("/")]
 async fn home_page() -> impl Responder {
-    HttpResponse::Ok().content_type("text/html").body("Welcome to the <a href=\"/graphql\">Carnival GraphQL API</a>")
+    HttpResponse::Ok()
+        .content_type("text/html")
+        .body("Welcome to the <a href=\"/graphql\">Carnival GraphQL API</a>")
 }
 
 async fn handle_request(
