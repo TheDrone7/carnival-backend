@@ -1,5 +1,4 @@
-use async_graphql::EmptySubscription;
-use async_graphql::Schema;
+use async_graphql::{EmptySubscription, Schema};
 
 pub mod mutation;
 pub mod query;

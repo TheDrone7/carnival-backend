@@ -1,8 +1,6 @@
 use crate::graphql::types::game_data::GameDataType;
 use async_graphql::*;
-use entity::game;
-use entity::game_data;
-use entity::game_data::Entity as GameData;
+use entity::{game, game_data, game_data::Entity as GameData};
 use sea_orm::{entity::*, query::*, DatabaseConnection};
 
 #[derive(Default)]

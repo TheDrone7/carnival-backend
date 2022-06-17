@@ -1,10 +1,9 @@
-use std::str;
-
 use async_graphql::*;
 use base64::encode;
 use entity::game_api_info;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use sea_orm::ActiveValue::Set;
+use std::str;
 
 #[derive(SimpleObject, InputObject)]
 #[graphql(input_name = "GameInput")]

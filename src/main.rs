@@ -7,27 +7,29 @@ pub mod graphql;
 pub mod logger;
 
 use actix_web::Responder;
-use actix_web::{get, guard, web, web::Data, App, HttpRequest, HttpResponse, HttpServer, Result};
-use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
-use async_graphql::*;
+use actix_web::{get, post, web::Data, App, HttpRequest, HttpResponse, HttpServer, Result};
+use async_graphql::{
+    http::{playground_source, GraphQLPlaygroundConfig},
+    EmptySubscription, Schema,
+};
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
+use auth::{authenticate, check_api_key};
 use dotenv::dotenv;
+use graphql::{mutation::Mutation, query::Query, CarnivalSchema};
 use log::debug;
 use logger::setup_logger;
 use migration::{Migrator, MigratorTrait};
 use sea_orm::DatabaseConnection;
 
-use crate::auth::{authenticate, check_api_key};
-use graphql::{mutation::Mutation, query::Query, CarnivalSchema};
-
 #[get("/")]
-async fn home_page() -> impl Responder {
+pub async fn home_page() -> impl Responder {
     HttpResponse::Ok()
         .content_type("text/html")
         .body("Welcome to the <a href=\"/graphql\">Carnival GraphQL API</a>")
 }
 
-async fn handle_request(
+#[post("/graphql")]
+pub async fn handle_request(
     schema: Data<CarnivalSchema>,
     db: Data<DatabaseConnection>,
     req: HttpRequest,
@@ -61,7 +63,8 @@ async fn handle_request(
     schema.execute(request).await.into()
 }
 
-async fn gql_playground() -> Result<HttpResponse> {
+#[get("/graphql")]
+pub async fn gql_playground() -> Result<HttpResponse> {
     let source = playground_source(
         GraphQLPlaygroundConfig::new("/graphql").subscription_endpoint("/graphql"),
     );
@@ -95,16 +98,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(Data::new(schema.clone()))
             .app_data(Data::new(connection.clone()))
             .service(home_page)
-            .service(
-                web::resource("/graphql")
-                    .guard(guard::Post())
-                    .to(handle_request),
-            )
-            .service(
-                web::resource("/graphql")
-                    .guard(guard::Get())
-                    .to(gql_playground),
-            )
+            .service(handle_request)
+            .service(gql_playground)
     })
     .bind(("0.0.0.0", 8000))?
     .run()

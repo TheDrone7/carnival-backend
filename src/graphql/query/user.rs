@@ -1,7 +1,6 @@
 use crate::graphql::types::user::UserType;
 use async_graphql::*;
-use entity::user;
-use entity::user::Entity as User;
+use entity::{user, user::Entity as User};
 use sea_orm::{entity::*, query::*, DatabaseConnection};
 
 #[derive(Default)]

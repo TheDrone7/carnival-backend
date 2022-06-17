@@ -1,6 +1,5 @@
 use crate::graphql::types::game::GameType;
-use async_graphql::connection::*;
-use async_graphql::*;
+use async_graphql::{connection::*, *};
 use entity::{game, user};
 use sea_orm::{entity::*, query::*, ActiveValue::Set, DatabaseConnection};
 

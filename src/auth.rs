@@ -1,6 +1,8 @@
 use actix_web::http::header::HeaderMap;
-use aes_gcm::aead::{Aead, NewAead};
-use aes_gcm::{Aes256Gcm, Key, Nonce};
+use aes_gcm::{
+    aead::{Aead, NewAead},
+    Aes256Gcm, Key, Nonce,
+};
 use entity::{
     game::Entity as Game,
     game::Model as GameModel,
