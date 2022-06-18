@@ -1,8 +1,11 @@
+use crate::graphql::types::{game_api_info::GameApiInfoType, user::UserType};
 use async_graphql::*;
-use entity::game;
-use sea_orm::ActiveValue::Set;
+use entity::{
+    game, game_api_info::Entity as GameApiInfo, user::Entity as User, user::Model as UserModel,
+};
+use sea_orm::{entity::*, ActiveValue::Set, DatabaseConnection};
 
-#[derive(SimpleObject, InputObject)]
+#[derive(InputObject)]
 #[graphql(input_name = "GameInput")]
 pub struct GameType {
     pub id: i32,
@@ -12,6 +15,59 @@ pub struct GameType {
     pub user_id: i32,
     pub icon_url: String,
     pub cover_url: String,
+}
+
+#[Object]
+impl GameType {
+    pub async fn id(&self) -> i32 {
+        self.id
+    }
+
+    pub async fn title(&self) -> String {
+        self.title.to_string()
+    }
+
+    pub async fn description(&self) -> String {
+        self.description.to_string()
+    }
+
+    pub async fn repl_url(&self) -> String {
+        self.repl_url.to_string()
+    }
+
+    pub async fn icon_url(&self) -> String {
+        self.icon_url.to_string()
+    }
+
+    pub async fn cover_url(&self) -> String {
+        self.cover_url.to_string()
+    }
+
+    pub async fn owner<'ctx>(&self, ctx: &'ctx Context<'_>) -> Option<UserType> {
+        let db = ctx.data_unchecked::<DatabaseConnection>();
+        let result = User::find_by_id(self.user_id).one(db).await;
+        if let Ok(Some(result)) = result {
+            return Some(result.into());
+        }
+        None
+    }
+
+    pub async fn api_info<'ctx>(&self, ctx: &Context<'ctx>) -> Option<GameApiInfoType> {
+        let db = ctx.data_unchecked::<DatabaseConnection>();
+        let current_user = ctx.data_unchecked::<Option<UserModel>>();
+        if current_user.is_none() {
+            return None;
+        }
+        let current_user = current_user.clone().unwrap();
+        if self.user_id != current_user.id {
+            return None;
+        }
+        let result = GameApiInfo::find_by_id(self.id).one(db).await;
+        if let Ok(Some(result)) = result {
+            return Some(result.into());
+        }
+        None
+    }
 }
 
 impl GameType {

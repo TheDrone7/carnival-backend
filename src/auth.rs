@@ -9,7 +9,7 @@ use entity::{
     game_api_info::Entity as GameApiInfo,
     user::{Entity as User, Model as UserModel},
 };
-use log::{error, warn};
+use log::error;
 use sea_orm::{entity::*, DatabaseConnection};
 use std::env;
 
@@ -37,21 +37,18 @@ pub async fn authenticate(
         let nonce = Nonce::from_slice(iv.as_bytes());
 
         let decoded = base64::decode(user_id);
-        if let Err(e) = decoded {
-            warn!("Error decoding user token: {}", e);
+        if decoded.is_err() {
             return (None, None);
         }
         let decoded = decoded.unwrap();
         let plaintext = cipher.decrypt(nonce, decoded.as_ref());
-        if let Err(e) = plaintext {
-            warn!("Error decrypting user token: {}", e);
+        if plaintext.is_err() {
             return (None, None);
         }
         let plaintext = plaintext.unwrap();
         let user_id = String::from_utf8(plaintext).expect("Failed to convert to string");
         let user_id = user_id.parse::<i32>();
-        if let Err(e) = user_id {
-            warn!("Error parsing user ID: {}", e);
+        if user_id.is_err() {
             return (None, None);
         }
         let user_id = user_id.unwrap();

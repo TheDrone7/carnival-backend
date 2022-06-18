@@ -24,7 +24,7 @@ cargo run
 
 4. Formatting the source code
 ```shell
-rustfmt --color always --verbose --edition 2021 src/main.rs
+cargo fmt
 ```
 
 5. Linting the source code.
